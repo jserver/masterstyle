@@ -36,6 +36,17 @@ func main() {
 			fmt.Println(">>> [", results.Err, "]")
 		}
 		fmt.Println(string(results.Output))
+
+	} else if *cmd == "script" {
+		args := &server.ScriptArgs{"script_test.sh", "#!/bin/bash\nls -al"}
+		results := new(server.ScriptResults)
+		scriptCall := client.Go("Script.Runner", args, results, nil)
+		<-scriptCall.Done
+		if len(results.Err) > 0 {
+			fmt.Println(">>> [", results.Err, "]")
+		}
+		fmt.Println(string(results.Output))
+
 	} else {
 		args := &server.TestArgs{packages}
 		results := new(server.TestResults)
