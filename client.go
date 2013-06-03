@@ -38,7 +38,7 @@ func main() {
 		fmt.Println(string(results.Output))
 
 	} else if *cmd == "script" {
-		args := &server.ScriptArgs{"script_test.sh", "#!/bin/bash\nls -al"}
+		args := &server.ScriptArgs{"script_test.sh", "#!/bin/bash\nls -al\n"}
 		results := new(server.ScriptResults)
 		scriptCall := client.Go("Script.Runner", args, results, nil)
 		<-scriptCall.Done
