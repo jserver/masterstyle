@@ -12,6 +12,7 @@ import (
 var (
 	host = flag.String("host", "localhost", "Host to Dial")
 	port = flag.Int("port", 1234, "Port serverstyle is running on")
+	cmd = flag.String("cmd", "test", "Comamnd to run")
 )
 
 func main() {
@@ -26,13 +27,24 @@ func main() {
 		log.Fatal("dialing:", err)
 	}
 
-	args := &server.AptGetArgs{packages}
-	results := new(server.AptGetResults)
-	aptGetCall := client.Go("AptGet.Install", args, results, nil)
-	<-aptGetCall.Done
-
-	if len(results.Err) > 0 {
-		fmt.Println(">>> [", results.Err, "]")
+	if *cmd == "install" {
+		args := &server.AptGetArgs{packages}
+		results := new(server.AptGetResults)
+		aptGetCall := client.Go("AptGet.Install", args, results, nil)
+		<-aptGetCall.Done
+		if len(results.Err) > 0 {
+			fmt.Println(">>> [", results.Err, "]")
+		}
+		fmt.Println(string(results.Output))
+	} else {
+		args := &server.TestArgs{packages}
+		results := new(server.TestResults)
+		testCall := client.Go("Test.Runner", args, results, nil)
+		<-testCall.Done
+		if len(results.Err) > 0 {
+			fmt.Println(">>> [", results.Err, "]")
+		}
+		fmt.Println(string(results.Output))
 	}
-	fmt.Println(results.Output)
+
 }
