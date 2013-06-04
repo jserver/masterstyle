@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"github.com/jserver/serverstyle/server"
 	"io/ioutil"
+	"launchpad.net/goamz/aws"
+	"launchpad.net/goamz/ec2"
 	"log"
 	"net/rpc"
 	"os"
@@ -70,6 +72,33 @@ var (
 	results server.Results
 )
 
+func launch() {
+    auth, err := aws.EnvAuth()
+    if err != nil {
+        log.Fatal("AWS AUTH Fail")
+    }
+    e := ec2.New(auth, aws.USEast)
+
+	secGroups := []ec2.SecurityGroup{{Name: "django-dev"}, {Name: "serverstyle"}}
+
+    options := ec2.RunInstances{
+        ImageId:            "ami-f3d1bb9a",
+        InstanceType:       "t1.micro",
+		KeyName:            "jserver",
+		PlacementGroupName: "us-east-1b",
+		SecurityGroups:     secGroups,
+    }
+    resp, err := e.RunInstances(&options)
+    if err != nil {
+		log.Fatal("AWS ec2 Run Instances Fail")
+    }
+
+    for _, instance := range resp.Instances {
+        println("Now running", instance.InstanceId)
+    }
+    println("Make sure you terminate instances to stop the cash flow.")
+}
+
 func main() {
 	flag.Parse()
 	args := flag.Args()
@@ -94,7 +123,12 @@ func main() {
 		log.Fatal("dialing:", err)
 	}
 
-	if cmd == "install" {
+	if cmd == "launch" {
+		fmt.Println("GETTING READY TO LAUNCH")
+		launch()
+		fmt.Println("DID WE LAUNCH")
+
+	} else if cmd == "install" {
 		if len(args) != 2 {
 			log.Fatal("No bundle given")
 		}
