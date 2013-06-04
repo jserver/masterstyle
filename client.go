@@ -12,27 +12,57 @@ import (
 	"strings"
 )
 
+type Build struct {
+	Size           string
+	Image          string
+	Key            string
+	Zone           string
+	SecurityGroups []string
+	UserData       string
+	Upgrade        string
+	Group          string
+	EasyInstall    string
+	ScriptName     string
+	ScriptAction   string
+}
+
+type Project struct {
+	Build        string
+	UserName     string
+	UserFullname string
+	UserPassword string
+	ScriptName   string
+	ScriptAction string
+}
+
+type Repository struct {
+	KeyServer string
+	PublicKey string
+	DebLine   string
+	Package   string
+}
+
 type Config struct {
-    DomainName      string                       `json:"domain_name"`
-	KeyPath         string                       `json:"key_path"`
-	PasswordSalt    string                       `json:"password_salt"`
-	ScriptPath      string                       `json:"script_path"`
-	Images          map[string]string            `json:"images"`
-	Bundles         map[string]string            `json:"bundles"`
-	PythonBundles   map[string]string            `json:"python_bundles"`
-	AptRepositories map[string]map[string]string `json:"apt_repositories"`
-	PPAs            map[string]string            `json:"personal_package_archives"`
-	Groups          map[string]string            `json:"groups"`
-	Builds          map[string]map[string]string `json:"builds"`
-	Projects        map[string]map[string]string `json:"projects"`
-	DebConf         map[string]map[string]string `json:"debconf"`
+	DomainName      string
+	KeyPath         string
+	PasswordSalt    string
+	ScriptPath      string
+	Images          map[string]string
+	Bundles         map[string]string
+	PythonBundles   map[string]string
+	AptRepositories map[string]Repository `json:"Apt:Repositories"`
+	PPAs            map[string]string
+	Groups          map[string]string
+	Builds          map[string]Build
+	Projects        map[string]Project
+	DebConfs        map[string][]string
 }
 
 var (
 	host = flag.String("host", "localhost", "Host to Dial")
 	port = flag.Int("port", 1234, "Port serverstyle is running on")
 
-	home = os.Getenv("HOME")
+	home   = os.Getenv("HOME")
 	config Config
 
 	command string
@@ -42,14 +72,11 @@ var (
 
 func main() {
 	flag.Parse()
-	address := fmt.Sprintf("%s:%d", *host, *port)
-	fmt.Println("Calling: " + address)
 	args := flag.Args()
 	if len(args) == 0 {
 		log.Fatal("No Command Given")
 	}
-	cmd := args[0]		
-
+	cmd := args[0]
 
 	data, err := ioutil.ReadFile(home + "/.clifford.json")
 	if err != nil {
@@ -60,6 +87,8 @@ func main() {
 		log.Fatal("unable to parse config:", err)
 	}
 
+	address := fmt.Sprintf("%s:%d", *host, *port)
+	fmt.Println("Calling: " + address)
 	client, err := rpc.DialHTTP("tcp", address)
 	if err != nil {
 		log.Fatal("dialing:", err)
@@ -71,13 +100,25 @@ func main() {
 		}
 		bundle := config.Bundles[args[1]]
 		packages := strings.Split(bundle, " ")
-		
+
 		cmdArgs = &server.AptGetArgs{packages}
 		results = new(server.AptGetResults)
 		command = "AptGet.Install"
 
 	} else if cmd == "script" {
-		cmdArgs = &server.ScriptArgs{"script_test.sh", "#!/bin/bash\nls -al\n"}
+		if len(args) != 2 {
+			log.Fatal("No script given")
+		}
+		script := os.ExpandEnv(args[1])
+		content, err := ioutil.ReadFile(script)
+		if err != nil {
+			log.Fatal("unable to read file")
+		}
+
+		script_parts := strings.Split(script, "/")
+		script_name := script_parts[len(script_parts)-1]
+
+		cmdArgs = &server.ScriptArgs{script_name, content}
 		results = new(server.ScriptResults)
 		command = "Script.Runner"
 
@@ -86,6 +127,7 @@ func main() {
 		cmdArgs = &server.TestArgs{packages}
 		results = new(server.TestResults)
 		command = "Test.Runner"
+
 	} else {
 		log.Fatal("Command Unknown")
 	}
