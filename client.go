@@ -15,6 +15,12 @@ var (
 	cmd = flag.String("cmd", "test", "Comamnd to run")
 )
 
+var (
+	args interface{}
+	results server.Results
+	command string
+)
+
 func main() {
 	flag.Parse()
 	//address := fmt.Sprintf("%s:%d", *host, *port)
@@ -28,34 +34,26 @@ func main() {
 	}
 
 	if *cmd == "install" {
-		args := &server.AptGetArgs{packages}
-		results := new(server.AptGetResults)
-		aptGetCall := client.Go("AptGet.Install", args, results, nil)
-		<-aptGetCall.Done
-		if len(results.Err) > 0 {
-			fmt.Println(">>> [", results.Err, "]")
-		}
-		fmt.Println(string(results.Output))
+		args = &server.AptGetArgs{packages}
+		results = new(server.AptGetResults)
+		command = "AptGet.Install"
 
 	} else if *cmd == "script" {
-		args := &server.ScriptArgs{"script_test.sh", "#!/bin/bash\nls -al\n"}
-		results := new(server.ScriptResults)
-		scriptCall := client.Go("Script.Runner", args, results, nil)
-		<-scriptCall.Done
-		if len(results.Err) > 0 {
-			fmt.Println(">>> [", results.Err, "]")
-		}
-		fmt.Println(string(results.Output))
+		args = &server.ScriptArgs{"script_test.sh", "#!/bin/bash\nls -al\n"}
+		results = new(server.ScriptResults)
+		command = "Script.Runner"
 
 	} else {
-		args := &server.TestArgs{packages}
-		results := new(server.TestResults)
-		testCall := client.Go("Test.Runner", args, results, nil)
-		<-testCall.Done
-		if len(results.Err) > 0 {
-			fmt.Println(">>> [", results.Err, "]")
-		}
-		fmt.Println(string(results.Output))
+		args = &server.TestArgs{packages}
+		results = new(server.TestResults)
+		command = "Test.Runner"
 	}
 
+	remoteCall := client.Go(command, args, results, nil)
+	<-remoteCall.Done
+	errText := results.GetErr()
+	if len(errText) > 0 {
+		fmt.Println(">>> [", errText, "]")
+	}
+	fmt.Println(results.GetOutput())
 }
