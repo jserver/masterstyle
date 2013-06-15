@@ -3,14 +3,11 @@ package main
 import (
 	"bufio"
 	"encoding/json"
-	"flag"
 	"fmt"
-	"github.com/jserver/serverstyle/server"
 	"io/ioutil"
 	"launchpad.net/goamz/aws"
 	"launchpad.net/goamz/ec2"
 	"log"
-	"net/rpc"
 	"os"
 	"strings"
 )
@@ -67,133 +64,97 @@ type Config struct {
 }
 
 var (
-	host = flag.String("host", "localhost", "Host to Dial")
-	port = flag.Int("port", 1234, "Port serverstyle is running on")
-
 	reader = bufio.NewReader(os.Stdin)
 	home   = os.Getenv("HOME")
 	config Config
 
-	command string
-	cmdArgs interface{}
-	results server.Results
+	conn *ec2.EC2
+	instances map[string]ec2.Instance
 )
 
-func launch(build string) {
-	auth, err := aws.EnvAuth()
-	if err != nil {
-		log.Fatal("AWS AUTH Fail")
-	}
-	e := ec2.New(auth, aws.USEast)
-
-	fmt.Print("Enter Tag Name: ")
-	line, _, err := reader.ReadLine()
-	if err != nil {
-		log.Fatal("Unable to read tag value!")
-	}
-	tags := []ec2.Tag{{"Name", string(line)}}
-
-	options := ec2.RunInstances{
-		ImageId:            config.Images[config.Builds[build].Image],
-		InstanceType:       config.Builds[build].Size,
-		KeyName:            config.Builds[build].Key,
-		PlacementGroupName: config.Builds[build].Placement,
-		SecurityGroups:     config.Builds[build].SecurityGroups,
-	}
-	resp, err := e.RunInstances(&options)
-	if err != nil {
-		log.Fatal("AWS ec2 Run Instances Fail", err)
-	}
-
-	instIds := make([]string, len(resp.Instances))
-	for idx, instance := range resp.Instances {
-		println("Now running", instance.InstanceId)
-		instIds[idx] = instance.InstanceId
-	}
-	_, err = e.CreateTags(instIds, tags)
-	if err != nil {
-		fmt.Println("Error Creating Tags: ", err)
-	}
-
-	println("Make sure you terminate instances to stop the cash flow.")
-}
-
 func main() {
-	flag.Parse()
-	args := flag.Args()
-	if len(args) == 0 {
-		log.Fatal("No Command Given")
-	}
-	cmd := args[0]
 
+	// Config File
+	fmt.Println("Reading config file")
 	data, err := ioutil.ReadFile(home + "/.clifford.json")
 	if err != nil {
-		log.Fatal("unable to read file")
+		log.Fatal("Unable to read file")
 	}
 	err = json.Unmarshal(data, &config)
 	if err != nil {
-		log.Fatal("unable to parse config:", err)
+		log.Fatal("Unable to parse config:", err)
 	}
 
-	if cmd == "launch" {
-		if len(args) != 2 {
-			log.Fatal("No build given")
-		}
-		launch(args[1])
+	// EC2 Connection
+	fmt.Println("Establishing connection with aws")
+	auth, err := aws.EnvAuth()
+	if err != nil {
+		log.Fatal("AWS AUTH FAIL!")
+	}
+	conn = ec2.New(auth, aws.USEast)
 
-	} else {
-		address := fmt.Sprintf("%s:%d", *host, *port)
-		fmt.Println("Calling: " + address)
-		client, err := rpc.DialHTTP("tcp", address)
+	// Instances
+	fmt.Println("Getting Instances")
+	instances = GetInstances()
+
+	// Command Loop
+	for {
+		print("(MasterStyle): ")
+		bytes, _, err := reader.ReadLine()
 		if err != nil {
-			log.Fatal("dialing:", err)
+			log.Fatal("Unable to read command!")
+		}
+		if len(bytes) == 0 {
+			continue
+		}
+		line := string(bytes)
+
+		parts := strings.Split(line, " ")
+		cmd := parts[0]
+		args := []string{}
+		if len(parts) > 1 {
+			args = parts[1:]
 		}
 
-		if cmd == "install" {
-			if len(args) != 2 {
-				log.Fatal("No bundle given")
-			}
-			bundle := config.Bundles[args[1]]
-			packages := strings.Split(bundle, " ")
+		switch cmd {
+			case "help":
+				fmt.Println("Help Message")
 
-			cmdArgs = &server.AptGetArgs{packages}
-			results = new(server.AptGetResults)
-			command = "AptGet.Install"
+			case "exit":
+				fallthrough
+			case "quit":
+				fmt.Println("Bye-Bye")
+				return
 
-		} else if cmd == "script" {
-			if len(args) != 2 {
-				log.Fatal("No script given")
-			}
-			script := os.ExpandEnv(args[1])
-			content, err := ioutil.ReadFile(script)
-			if err != nil {
-				log.Fatal("unable to read file")
-			}
+			case "launch":
+				Launch(args)
 
-			script_parts := strings.Split(script, "/")
-			script_name := script_parts[len(script_parts)-1]
+			case "status":
+				Status()
 
-			cmdArgs = &server.ScriptArgs{script_name, content}
-			results = new(server.ScriptResults)
-			command = "Script.Runner"
+			case "reboot":
+				Reboot(args)
+			case "start":
+				Start(args)
+			case "stop":
+				Stop(args)
+			case "terminate":
+				Terminate(args)
 
-		} else if cmd == "test" {
-			packages := []string{"A", "B", "C"}
-			cmdArgs = &server.TestArgs{packages}
-			results = new(server.TestResults)
-			command = "Test.Runner"
+			case "update":
+				Update(args)
+			case "upgrade":
+				Upgrade(args)
+			case "install":
+				Install(args)
+			case "script":
+				Script(args)
+			case "test":
+				Test(args)
 
-		} else {
-			log.Fatal("Command Unknown")
+			default:
+				fmt.Println("Command Not Found!")
 		}
-
-		remoteCall := client.Go(command, cmdArgs, results, nil)
-		<-remoteCall.Done
-		errText := results.GetErr()
-		if len(errText) > 0 {
-			fmt.Println(">>> [", errText, "]")
-		}
-		fmt.Println(results.GetOutput())
+		continue
 	}
-
 }
