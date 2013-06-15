@@ -45,6 +45,11 @@ type Repository struct {
 	Package   string
 }
 
+type PPA struct {
+	Package string
+	Source  string
+}
+
 type Config struct {
 	DomainName      string
 	KeyPath         string
@@ -54,7 +59,7 @@ type Config struct {
 	Bundles         map[string]string
 	PythonBundles   map[string]string
 	AptRepositories map[string]Repository `json:"Apt:Repositories"`
-	PPAs            map[string]string
+	PPAs            []PPA
 	Groups          map[string]string
 	Builds          map[string]Build
 	Projects        map[string]Project
