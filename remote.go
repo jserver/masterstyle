@@ -123,10 +123,9 @@ func Test(args []string) {
 		fmt.Println("No directories given")
 		return
 	}
-	dirs := strings.Split(args[1], " ")
 
-	cmdArgs := &server.AptGetInstallArgs{dirs}
-	results := new(server.AptGetInstallResults)
+	cmdArgs := &server.TestArgs{args[1:]}
+	results := new(server.TestResults)
 	command := "Test.Runner"
 
 	RemoteCall(address, cmdArgs, results, command)
