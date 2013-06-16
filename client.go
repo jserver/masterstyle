@@ -10,6 +10,7 @@ import (
 	"launchpad.net/goamz/s3"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -81,7 +82,7 @@ func AskQuestion(question string) string {
 		fmt.Print(question)
 		bytes, _, err := reader.ReadLine()
 		if err != nil {
-			log.Fatal("Unable to read command!")
+			log.Fatal("Unable to read answer!")
 		}
 		if len(bytes) == 0 {
 			continue
@@ -90,8 +91,36 @@ func AskQuestion(question string) string {
 	}
 }
 
-func main() {
+type Answer struct {
+	Text  string
+	Value string
+}
 
+func AskMultipleChoice(question string, answers []Answer) string {
+	for {
+		for idx, answer := range answers {
+			fmt.Printf("%d) %s\n", idx+1, answer.Text)
+		}
+		fmt.Print(question)
+		bytes, _, err := reader.ReadLine()
+		if err != nil {
+			log.Fatal("Unable to read multiple choice answer!")
+		}
+		if len(bytes) == 0 {
+			continue
+		}
+		num, err := strconv.Atoi(string(bytes))
+		if err != nil {
+			fmt.Println("Unable to convert to int")
+			continue
+		}
+		if num > 0 && num <= len(answers) {
+			return answers[num-1].Value
+		}
+	}
+}
+
+func main() {
 	// Config File
 	fmt.Println("Reading config file")
 	data, err := ioutil.ReadFile(home + "/.clifford.json")
@@ -164,6 +193,9 @@ func main() {
 			Script(args)
 		case "test":
 			Test(args)
+
+		case "easy", "easy_install":
+			EasyInstall(args)
 
 		case "s3upload":
 			S3Upload()

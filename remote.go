@@ -45,9 +45,9 @@ func Update(args []string) {
 		return
 	}
 
-	cmdArgs := &server.AptGetUpdateArgs{}
-	results := new(server.AptGetUpdateResults)
-	command := "AptGetUpdate.Update"
+	cmdArgs := &server.AptUpdateArgs{}
+	results := new(server.AptUpdateResults)
+	command := "AptUpdate.Update"
 
 	RemoteCall(address, cmdArgs, results, command)
 }
@@ -59,9 +59,9 @@ func Upgrade(args []string) {
 		return
 	}
 
-	cmdArgs := &server.AptGetUpgradeArgs{}
-	results := new(server.AptGetUpgradeResults)
-	command := "AptGetUpgrade.Upgrade"
+	cmdArgs := &server.AptUpgradeArgs{}
+	results := new(server.AptUpgradeResults)
+	command := "AptUpgrade.Upgrade"
 
 	RemoteCall(address, cmdArgs, results, command)
 }
@@ -79,9 +79,29 @@ func Install(args []string) {
 	bundle := config.Bundles[args[1]]
 	packages := strings.Split(bundle, " ")
 
-	cmdArgs := &server.AptGetInstallArgs{packages}
-	results := new(server.AptGetInstallResults)
-	command := "AptGetInstall.Install"
+	cmdArgs := &server.AptInstallArgs{packages}
+	results := new(server.AptInstallResults)
+	command := "AptInstall.Install"
+
+	RemoteCall(address, cmdArgs, results, command)
+}
+
+func EasyInstall(args []string) {
+	address, err := GetAddress(args)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	if len(args) <= 1 {
+		fmt.Println("No python bundle given")
+		return
+	}
+	bundle := config.PythonBundles[args[1]]
+	packages := strings.Split(bundle, " ")
+
+	cmdArgs := &server.EasyInstallArgs{packages}
+	results := new(server.EasyInstallResults)
+	command := "EasyInstall.Install"
 
 	RemoteCall(address, cmdArgs, results, command)
 }

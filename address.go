@@ -1,28 +1,51 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"launchpad.net/goamz/ec2"
 )
 
-func Addresses() {
+func GetAddresses() ([]ec2.Address, error) {
 	resp, err := conn.DescribeAddresses()
 	if err != nil {
-		fmt.Println("Unable to get Allocated IP Addresses", err)
+		return nil, errors.New("Unable to get IP Addresses")
+	}
+	return resp.Addresses, nil
+}
+
+func Addresses() {
+	addresses, err := GetAddresses()
+	if err != nil {
+		fmt.Println(err)
 		return
 	}
-	for _, address := range resp.Addresses {
+	for _, address := range addresses {
 		fmt.Println(address.PublicIP, address.InstanceId)
 	}
 }
 
 func Associate(args []string) {
-	if len(args) != 2 {
-		fmt.Println("Pass in IP Address and InstanceID!")
+	addresses, err := GetAddresses()
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
-	address := args[0]
-	instanceId := args[1]
+	answers := make([]Answer, len(addresses))
+	for idx, address := range addresses {
+		answers[idx] = Answer{address.PublicIP, address.PublicIP}
+	}
+	addressAnswer := AskMultipleChoice("IP Address? ", answers)
 
-	resp, err := conn.AssociateAddress(address, instanceId)
+	instanceMap := GetInstances()
+	answers = make([]Answer, len(instanceMap))
+	idx := 0
+	for key, value := range instanceMap {
+		answers[idx] = Answer{key, value.InstanceId}
+	}
+	instanceAnswer := AskMultipleChoice("Instance? ", answers)
+
+	resp, err := conn.AssociateAddress(addressAnswer, instanceAnswer)
 	if err != nil {
 		fmt.Println("Unable to Associate IP Address", err)
 		return
