@@ -48,7 +48,7 @@ func Reboot(args []string) {
 
 	_, err := conn.RebootInstances(instId)
 	if err != nil {
-		log.Fatal("AWS ec2 Terminate Fail", err)
+		fmt.Println("AWS ec2 Reboot Fail", err)
 	}
 }
 
@@ -61,7 +61,7 @@ func Start(args []string) {
 
 	_, err := conn.StartInstances(instId)
 	if err != nil {
-		log.Fatal("AWS ec2 Terminate Fail", err)
+		fmt.Println("AWS ec2 Start Fail", err)
 	}
 }
 
@@ -74,7 +74,7 @@ func Stop(args []string) {
 
 	_, err := conn.StopInstances(instId)
 	if err != nil {
-		log.Fatal("AWS ec2 Terminate Fail", err)
+		fmt.Println("AWS ec2 Stop Fail", err)
 	}
 }
 
@@ -85,8 +85,8 @@ func Terminate(args []string) {
 	name := args[0]
 	instId := instances[name].InstanceId
 
-	_, err := conn.TerminateInstances([]string{ instId })
+	_, err := conn.TerminateInstances([]string{instId})
 	if err != nil {
-		log.Fatal("AWS ec2 Terminate Fail", err)
+		fmt.Println("AWS ec2 Terminate Fail", err)
 	}
 }

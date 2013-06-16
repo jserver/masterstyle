@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"launchpad.net/goamz/aws"
 	"launchpad.net/goamz/ec2"
+	"launchpad.net/goamz/s3"
 	"log"
 	"os"
 	"strings"
@@ -48,6 +49,7 @@ type PPA struct {
 }
 
 type Config struct {
+	BucketName      string
 	DomainName      string
 	KeyPath         string
 	PasswordSalt    string
@@ -68,9 +70,25 @@ var (
 	home   = os.Getenv("HOME")
 	config Config
 
-	conn *ec2.EC2
+	conn      *ec2.EC2
 	instances map[string]ec2.Instance
+
+	bucket *s3.Bucket
 )
+
+func AskQuestion(question string) string {
+	for {
+		fmt.Print(question)
+		bytes, _, err := reader.ReadLine()
+		if err != nil {
+			log.Fatal("Unable to read command!")
+		}
+		if len(bytes) == 0 {
+			continue
+		}
+		return string(bytes)
+	}
+}
 
 func main() {
 
@@ -85,13 +103,19 @@ func main() {
 		log.Fatal("Unable to parse config:", err)
 	}
 
-	// EC2 Connection
+	// AWS Auth
 	fmt.Println("Establishing connection with aws")
 	auth, err := aws.EnvAuth()
 	if err != nil {
 		log.Fatal("AWS AUTH FAIL!")
 	}
+
+	// EC2 Connection
 	conn = ec2.New(auth, aws.USEast)
+
+	// S3 Connection/Bucket
+	s3conn := s3.New(auth, aws.USEast)
+	bucket = s3conn.Bucket(config.BucketName)
 
 	// Instances
 	fmt.Println("Getting Instances")
@@ -99,16 +123,7 @@ func main() {
 
 	// Command Loop
 	for {
-		print("(MasterStyle): ")
-		bytes, _, err := reader.ReadLine()
-		if err != nil {
-			log.Fatal("Unable to read command!")
-		}
-		if len(bytes) == 0 {
-			continue
-		}
-		line := string(bytes)
-
+		line := AskQuestion("(MasterStyle): ")
 		parts := strings.Split(line, " ")
 		cmd := parts[0]
 		args := []string{}
@@ -117,43 +132,51 @@ func main() {
 		}
 
 		switch cmd {
-			case "help":
-				fmt.Println("Help Message")
+		case "h", "help":
+			fmt.Println("Help Message")
 
-			case "exit":
-				fallthrough
-			case "quit":
-				fmt.Println("Bye-Bye")
-				return
+		case "exit", "q", "quit":
+			fmt.Println("Bye-Bye")
+			return
 
-			case "launch":
-				Launch(args)
+		case "launch":
+			Launch(args)
 
-			case "status":
-				Status()
+		case "ls", "status":
+			Status()
 
-			case "reboot":
-				Reboot(args)
-			case "start":
-				Start(args)
-			case "stop":
-				Stop(args)
-			case "terminate":
-				Terminate(args)
+		case "reboot":
+			Reboot(args)
+		case "start":
+			Start(args)
+		case "stop":
+			Stop(args)
+		case "terminate":
+			Terminate(args)
 
-			case "update":
-				Update(args)
-			case "upgrade":
-				Upgrade(args)
-			case "install":
-				Install(args)
-			case "script":
-				Script(args)
-			case "test":
-				Test(args)
+		case "update":
+			Update(args)
+		case "upgrade":
+			Upgrade(args)
+		case "install":
+			Install(args)
+		case "script":
+			Script(args)
+		case "test":
+			Test(args)
 
-			default:
-				fmt.Println("Command Not Found!")
+		case "s3upload":
+			S3Upload()
+
+		case "addresses":
+			Addresses()
+		case "associate":
+			Associate(args)
+		case "disassociate":
+			Disassociate(args)
+
+		default:
+			fmt.Println("Command Not Found!")
 		}
 		continue
 	}

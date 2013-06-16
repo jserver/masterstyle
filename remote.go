@@ -130,5 +130,3 @@ func Test(args []string) {
 
 	RemoteCall(address, cmdArgs, results, command)
 }
-
-
