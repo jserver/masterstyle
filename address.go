@@ -7,7 +7,7 @@ import (
 )
 
 func GetAddresses() ([]ec2.Address, error) {
-	resp, err := conn.DescribeAddresses()
+	resp, err := conn.DescribeAddresses(nil, nil)
 	if err != nil {
 		return nil, errors.New("Unable to get IP Addresses")
 	}
