@@ -236,9 +236,9 @@ func main() {
 		case "addresses":
 			Addresses()
 		case "associate":
-			Associate(args)
+			Associate()
 		case "disassociate":
-			Disassociate(args)
+			Disassociate()
 
 		default:
 			fmt.Println("Command Not Found!")

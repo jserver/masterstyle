@@ -25,7 +25,7 @@ func Addresses() {
 	}
 }
 
-func Associate(args []string) {
+func Associate() {
 	addresses, err := GetAddresses()
 	if err != nil {
 		fmt.Println(err)
@@ -42,6 +42,7 @@ func Associate(args []string) {
 	idx := 0
 	for key, value := range instanceMap {
 		answers[idx] = Answer{key, value.InstanceId}
+		idx++
 	}
 	instanceAnswer := AskMultipleChoice("Instance? ", answers)
 
@@ -53,13 +54,19 @@ func Associate(args []string) {
 	fmt.Println(resp.Return)
 }
 
-func Disassociate(args []string) {
-	if len(args) != 1 {
-		fmt.Println("Pass in IP Address!")
+func Disassociate() {
+	addresses, err := GetAddresses()
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
-	address := args[0]
+	answers := make([]Answer, len(addresses))
+	for idx, address := range addresses {
+		answers[idx] = Answer{address.PublicIP, address.PublicIP}
+	}
+	addressAnswer := AskMultipleChoice("IP Address? ", answers)
 
-	resp, err := conn.DisassociateAddress(address)
+	resp, err := conn.DisassociateAddress(addressAnswer)
 	if err != nil {
 		fmt.Println("Unable to Disassociate IP Address", err)
 		return
