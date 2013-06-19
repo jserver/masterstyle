@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"launchpad.net/goamz/ec2"
 	"log"
 )
 
@@ -33,7 +34,7 @@ func GetInstances() []*NamedInstance {
 			if name == "" {
 				name = fmt.Sprintf("instance-%d-%d", resIdx, idx)
 			}
-			inst := NamedInstance{name, &instance}
+			inst := NamedInstance{name, instance}
 			instances = append(instances, &inst)
 		}
 	}
@@ -41,10 +42,30 @@ func GetInstances() []*NamedInstance {
 	return instances
 }
 
+func Tag() {
+	instances := GetInstances()
+	answers := make([]Answer, len(instances))
+	for idx, value := range instances {
+		text := fmt.Sprintf("%s [%s] %s", value.Name, value.InstanceId, value.DNSName)
+		answers[idx] = Answer{text, value.InstanceId}
+	}
+	instanceAnswer := AskMultipleChoice("Instance? ", answers)
+	instIds := []string{instanceAnswer}
+
+	line := AskQuestion("Enter Tag Name: ")
+	tags := []ec2.Tag{{"Name", line}}
+
+	_, err := conn.CreateTags(instIds, tags)
+	if err != nil {
+		fmt.Println("Unable to Tag Instance", err)
+		return
+	}
+}
+
 func Status() {
 	instances = GetInstances()
 	for _, instance := range instances {
-		fmt.Printf("%s [%s (%s)] %s - %s\n", instance.Name, instance.InstanceId, instance.AvailZone, instance.State.Name, instance.DNSName)
+		fmt.Printf("%s|%s|%s %s (%s) %s\n", instance.AvailZone, instance.InstanceType, instance.InstanceId, instance.Name, instance.State.Name, instance.DNSName)
 	}
 }
 

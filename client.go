@@ -68,7 +68,7 @@ type Config struct {
 
 type NamedInstance struct {
 	Name string
-	*ec2.Instance
+	ec2.Instance
 }
 
 var (
@@ -211,6 +211,9 @@ func main() {
 
 		case "ls", "status":
 			Status()
+
+		case "tag":
+			Tag()
 
 		case "reboot":
 			Reboot(args)
