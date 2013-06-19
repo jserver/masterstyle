@@ -2,17 +2,25 @@ package main
 
 import (
 	"fmt"
-	"launchpad.net/goamz/ec2"
 	"log"
 )
 
-func GetInstances() map[string]ec2.Instance {
+func GetInstance(name string) *NamedInstance {
+	for _, instance := range instances {
+		if name == instance.Name {
+			return instance
+		}
+	}
+	return nil
+}
+
+func GetInstances() []*NamedInstance {
 	resp, err := conn.Instances(nil, nil)
 	if err != nil {
 		log.Fatal("AWS ec2 GetInstances Fail", err)
 	}
 
-	instances = make(map[string]ec2.Instance)
+	instances = []*NamedInstance{}
 
 	for resIdx, reservation := range resp.Reservations {
 		for idx, instance := range reservation.Instances {
@@ -25,7 +33,8 @@ func GetInstances() map[string]ec2.Instance {
 			if name == "" {
 				name = fmt.Sprintf("instance-%d-%d", resIdx, idx)
 			}
-			instances[name] = instance
+			inst := NamedInstance{name, &instance}
+			instances = append(instances, &inst)
 		}
 	}
 
@@ -34,8 +43,8 @@ func GetInstances() map[string]ec2.Instance {
 
 func Status() {
 	instances = GetInstances()
-	for name, instance := range instances {
-		fmt.Printf("%s [%s (%s)] %s - %s\n", name, instance.InstanceId, instance.AvailZone, instance.State.Name, instance.DNSName)
+	for _, instance := range instances {
+		fmt.Printf("%s [%s (%s)] %s - %s\n", instance.Name, instance.InstanceId, instance.AvailZone, instance.State.Name, instance.DNSName)
 	}
 }
 
@@ -44,7 +53,8 @@ func Reboot(args []string) {
 		fmt.Println("No instance name given")
 	}
 	name := args[0]
-	instId := instances[name].InstanceId
+	instance := GetInstance(name)
+	instId := instance.InstanceId
 
 	_, err := conn.RebootInstances(instId)
 	if err != nil {
@@ -57,7 +67,8 @@ func Start(args []string) {
 		fmt.Println("No instance name given")
 	}
 	name := args[0]
-	instId := instances[name].InstanceId
+	instance := GetInstance(name)
+	instId := instance.InstanceId
 
 	_, err := conn.StartInstances(instId)
 	if err != nil {
@@ -70,7 +81,8 @@ func Stop(args []string) {
 		fmt.Println("No instance name given")
 	}
 	name := args[0]
-	instId := instances[name].InstanceId
+	instance := GetInstance(name)
+	instId := instance.InstanceId
 
 	_, err := conn.StopInstances(instId)
 	if err != nil {
@@ -83,7 +95,8 @@ func Terminate(args []string) {
 		fmt.Println("No instance name given")
 	}
 	name := args[0]
-	instId := instances[name].InstanceId
+	instance := GetInstance(name)
+	instId := instance.InstanceId
 
 	_, err := conn.TerminateInstances([]string{instId})
 	if err != nil {

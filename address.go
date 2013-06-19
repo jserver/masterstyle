@@ -37,12 +37,11 @@ func Associate() {
 	}
 	addressAnswer := AskMultipleChoice("IP Address? ", answers)
 
-	instanceMap := GetInstances()
-	answers = make([]Answer, len(instanceMap))
-	idx := 0
-	for key, value := range instanceMap {
-		answers[idx] = Answer{key, value.InstanceId}
-		idx++
+	instances := GetInstances()
+	answers = make([]Answer, len(instances))
+	for idx, value := range instances {
+		text := fmt.Sprintf("%s [%s] %s", value.Name, value.InstanceId, value.DNSName)
+		answers[idx] = Answer{text, value.InstanceId}
 	}
 	instanceAnswer := AskMultipleChoice("Instance? ", answers)
 

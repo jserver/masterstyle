@@ -66,14 +66,19 @@ type Config struct {
 	DebConfs        map[string][]string
 }
 
+type NamedInstance struct {
+	Name string
+	*ec2.Instance
+}
+
 var (
-	reader = bufio.NewReader(os.Stdin)
-	home   = os.Getenv("HOME")
+	reader     = bufio.NewReader(os.Stdin)
+	home       = os.Getenv("HOME")
 	scriptPath string
-	config Config
+	config     Config
 
 	conn      *ec2.EC2
-	instances map[string]ec2.Instance
+	instances []*NamedInstance
 
 	bucket *s3.Bucket
 )

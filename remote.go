@@ -15,7 +15,8 @@ func GetAddress(args []string) (string, error) {
 		return "", errors.New("No instance name given")
 	}
 	name := args[0]
-	host := instances[name].DNSName
+	instance := GetInstance(name)
+	host := instance.DNSName
 
 	return fmt.Sprintf("%s:%d", host, 32168), nil
 }
