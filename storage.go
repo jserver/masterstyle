@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"launchpad.net/goamz/s3"
+	"os"
 )
 
 func S3Upload() {
-	bytes, err := ioutil.ReadFile("/home/joe/golang/bin/serverstyle")
+	bytes, err := ioutil.ReadFile(os.ExpandEnv("$GOPATH/bin/serverstyle"))
 	if err != nil {
 		fmt.Println("Unable to open ServerStyle executable", err)
 	}

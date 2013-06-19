@@ -18,7 +18,7 @@ type Build struct {
 	Size           string
 	Image          string
 	Key            string
-	Placement      string
+	Zone           string
 	SecurityGroups []ec2.SecurityGroup
 	UserData       string
 	Upgrade        string
@@ -69,6 +69,7 @@ type Config struct {
 var (
 	reader = bufio.NewReader(os.Stdin)
 	home   = os.Getenv("HOME")
+	scriptPath string
 	config Config
 
 	conn      *ec2.EC2
@@ -154,18 +155,19 @@ func help() {
 
 func main() {
 	// Config File
-	fmt.Println("Reading config file")
-	data, err := ioutil.ReadFile(home + "/.clifford.json")
+	data, err := ioutil.ReadFile(home + "/.serverstyle/config.json")
 	if err != nil {
-		log.Fatal("Unable to read file")
+		log.Fatal("Unable to read config file")
 	}
 	err = json.Unmarshal(data, &config)
 	if err != nil {
 		log.Fatal("Unable to parse config:", err)
 	}
 
+	// ScriptPath
+	scriptPath = os.ExpandEnv(config.ScriptPath)
+
 	// AWS Auth
-	fmt.Println("Establishing connection with aws")
 	auth, err := aws.EnvAuth()
 	if err != nil {
 		log.Fatal("AWS AUTH FAIL!")
@@ -179,7 +181,6 @@ func main() {
 	bucket = s3conn.Bucket(config.BucketName)
 
 	// Instances
-	fmt.Println("Getting Instances")
 	instances = GetInstances()
 
 	// Command Loop

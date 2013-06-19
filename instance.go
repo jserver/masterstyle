@@ -35,7 +35,7 @@ func GetInstances() map[string]ec2.Instance {
 func Status() {
 	instances = GetInstances()
 	for name, instance := range instances {
-		fmt.Printf("%s [%s] %s - %s\n", name, instance.InstanceId, instance.State.Name, instance.DNSName)
+		fmt.Printf("%s [%s (%s)] %s - %s\n", name, instance.InstanceId, instance.AvailZone, instance.State.Name, instance.DNSName)
 	}
 }
 

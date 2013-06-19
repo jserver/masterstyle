@@ -23,12 +23,12 @@ func Launch(args []string) {
 		SecurityGroups: config.Builds[build].SecurityGroups,
 	}
 
-	if config.Builds[build].Placement != "" {
-		options.PlacementGroupName = config.Builds[build].Placement
+	if config.Builds[build].Zone != "" {
+		options.AvailZone = config.Builds[build].Zone
 	}
 
 	if config.Builds[build].UserData != "" {
-		userData, err := ioutil.ReadFile(home + "/.clifford.d/" + config.Builds[build].UserData)
+		userData, err := ioutil.ReadFile(scriptPath + config.Builds[build].UserData)
 		if err != nil {
 			fmt.Println("Unable to read UserData script", err)
 			return
