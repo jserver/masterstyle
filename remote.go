@@ -35,8 +35,14 @@ func RemoteCall(address string, cmdArgs interface{}, results server.Results, com
 	if len(errText) > 0 {
 		fmt.Println(">>> [", errText, "]")
 	}
-	fmt.Println(results.GetOutput())
 
+	//fmt.Println(results.GetOutput())
+	errors := results.GetErrors()
+	if len(errors) > 0 {
+		fmt.Println("-----ERRORS-----")
+		fmt.Println(errors)
+		fmt.Println("----------------")
+	}
 }
 
 func Update(args []string) {
