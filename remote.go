@@ -79,18 +79,50 @@ func Install(args []string) {
 		fmt.Println(err)
 		return
 	}
-	if len(args) <= 1 {
-		fmt.Println("No bundle given")
+	if len(args) < 3 {
+		fmt.Println("Usage: install <box> package(s)/bundle(s)/group(s) <names...>")
 		return
 	}
-	bundle := config.Bundles[args[1]]
-	packages := strings.Split(bundle, " ")
 
-	cmdArgs := &server.AptInstallArgs{packages}
-	results := new(server.AptInstallResults)
-	command := "AptInstall.Install"
+	action := args[1]
+	names := args[2:]
 
-	RemoteCall(address, cmdArgs, results, command)
+	bundles := []string{}
+
+	switch action {
+	case "package", "packages":
+		packages := strings.Join(names, " ")
+		bundles = append(bundles, packages)
+
+	case "bundle", "bundles":
+		for _, bundle := range names {
+			packages := config.Bundles[bundle]
+			bundles = append(bundles, packages)
+		}
+
+	case "group", "groups":
+		for _, name := range names {
+			groups := config.Groups[name]
+			for _, group := range groups {
+				if group.Type == "bundle" {
+					packages := config.Bundles[group.Name]
+					bundles = append(bundles, packages)
+				}
+			}
+		}
+
+	default:
+		fmt.Println("Install action not recognized")
+		return
+	}
+
+	for _, packages := range bundles {
+		cmdArgs := &server.AptInstallArgs{strings.Split(packages, " ")}
+		results := new(server.AptInstallResults)
+		command := "AptInstall.Install"
+
+		RemoteCall(address, cmdArgs, results, command)
+	}
 }
 
 func EasyInstall(args []string) {

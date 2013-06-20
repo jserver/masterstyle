@@ -37,6 +37,11 @@ type PPA struct {
 	Source  string
 }
 
+type Group struct {
+	Type string
+	Name string
+}
+
 type Config struct {
 	BucketName      string
 	DomainName      string
@@ -46,12 +51,10 @@ type Config struct {
 	Images          map[string]string
 	Bundles         map[string]string
 	PythonBundles   map[string]string
+	Groups          map[string][]Group
 	AptRepositories map[string]Repository `json:"Apt:Repositories"`
 	PPAs            []PPA
-	Groups          map[string]string
 	Builds          map[string]Build
 	Projects        map[string]Project
 	DebConfs        map[string][]string
 }
-
-
