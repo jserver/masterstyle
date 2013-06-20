@@ -20,9 +20,17 @@ func Addresses() {
 		fmt.Println(err)
 		return
 	}
-	for _, address := range addresses {
-		fmt.Println(address.PublicIP, address.InstanceId)
+	header := []string{"IP", "InstId", "Name"}
+	rows := make([]Row, len(addresses))
+	for idx, address := range addresses {
+		rows[idx] = Row{
+			address.PublicIP,
+			address.InstanceId,
+			GetInstanceName(address.InstanceId),
+		}
 	}
+	table := Table{header, rows}
+	PrintTable(&table)
 }
 
 func Associate() {

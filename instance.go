@@ -15,6 +15,20 @@ func GetInstance(name string) *NamedInstance {
 	return nil
 }
 
+func GetInstanceName(instId string) string {
+	var name string = "N/A"
+	for _, instance := range instances {
+		if instId == instance.InstanceId {
+			for _, tag := range instance.Tags {
+				if tag.Key == "Name" {
+					name = tag.Value
+				}
+			}
+		}
+	}
+	return name
+}
+
 func GetInstances() []*NamedInstance {
 	resp, err := conn.Instances(nil, nil)
 	if err != nil {
@@ -64,9 +78,20 @@ func Tag() {
 
 func Status() {
 	instances = GetInstances()
-	for _, instance := range instances {
-		fmt.Printf("%s|%s|%s %s (%s) %s\n", instance.AvailZone, instance.InstanceType, instance.InstanceId, instance.Name, instance.State.Name, instance.DNSName)
+	header := []string{"InstId", "Name", "Zone", "Type", "Status", "DNS"}
+	rows := make([]Row, len(instances))
+	for idx, instance := range instances {
+		rows[idx] = Row{
+			instance.InstanceId,
+			instance.Name,
+			instance.AvailZone,
+			instance.InstanceType,
+			instance.State.Name,
+			instance.DNSName,
+		}
 	}
+	table := Table{header, rows}
+	PrintTable(&table)
 }
 
 func Reboot(args []string) {
