@@ -151,7 +151,7 @@ func main() {
 		case "test":
 			Test(args)
 
-		case "easy", "easy_install":
+		case "easy_install":
 			EasyInstall(args)
 
 		case "s3upload":

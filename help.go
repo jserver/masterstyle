@@ -6,14 +6,18 @@ func help() {
 	fmt.Println(`The following commands are available
 	exit,q,quit         Leave Program
 	
-	ls, status          List all machines
-	launch              Create a new ec2 instance from specified build
-	update              apt-get update
-	upgrade             apt-get upgrade
-	install             Install a bundle from json config
-	script              Run a script on the machine specified
-	test                Pass in a few directories to see if ServerStyle is responding
-	easy, easy_install  Install a python bundle from json config
+	ls, status             List all machines
+	launch <build>         Create a new ec2 instance from specified build
+	update <name>          apt-get update
+	upgrade <name>         apt-get upgrade
+	script <name> <script> Run a script on the machine specified
+	test <dirs...>         Pass in a few directories to see if ServerStyle is responding
+
+	easy_install <name> <bundle>           Install a python bundle from json config
+
+	install <name> package(s) <packges...> Install one or more packages
+	install <name> bundle(s) <bundles...>  Install bundles from json config
+	install <name> group(s) <groups...>    Install groups from json config
 
 	EC2 Actions on a specified Machine
 	----------------------------------
