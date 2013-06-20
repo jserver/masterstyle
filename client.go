@@ -14,58 +14,6 @@ import (
 	"strings"
 )
 
-type Build struct {
-	Size           string
-	Image          string
-	Key            string
-	Zone           string
-	SecurityGroups []ec2.SecurityGroup
-	UserData       string
-	Upgrade        string
-	Group          string
-	EasyInstall    string
-	ScriptName     string
-	ScriptAction   string
-}
-
-type Project struct {
-	Build        string
-	UserName     string
-	UserFullname string
-	UserPassword string
-	ScriptName   string
-	ScriptAction string
-}
-
-type Repository struct {
-	KeyServer string
-	PublicKey string
-	DebLine   string
-	Package   string
-}
-
-type PPA struct {
-	Package string
-	Source  string
-}
-
-type Config struct {
-	BucketName      string
-	DomainName      string
-	KeyPath         string
-	PasswordSalt    string
-	ScriptPath      string
-	Images          map[string]string
-	Bundles         map[string]string
-	PythonBundles   map[string]string
-	AptRepositories map[string]Repository `json:"Apt:Repositories"`
-	PPAs            []PPA
-	Groups          map[string]string
-	Builds          map[string]Build
-	Projects        map[string]Project
-	DebConfs        map[string][]string
-}
-
 type NamedInstance struct {
 	Name string
 	ec2.Instance
@@ -75,7 +23,7 @@ var (
 	reader     = bufio.NewReader(os.Stdin)
 	home       = os.Getenv("HOME")
 	scriptPath string
-	config     Config
+	config     *Config
 
 	conn      *ec2.EC2
 	instances []*NamedInstance
@@ -124,38 +72,6 @@ func AskMultipleChoice(question string, answers []Answer) string {
 			return answers[num-1].Value
 		}
 	}
-}
-
-func help() {
-	fmt.Println(`The following commands are available
-	exit,q,quit         Leave Program
-	
-	ls, status          List all machines
-	launch              Create a new ec2 instance from specified build
-	update              apt-get update
-	upgrade             apt-get upgrade
-	install             Install a bundle from json config
-	script              Run a script on the machine specified
-	test                Pass in a few directories to see if ServerStyle is responding
-	easy, easy_install  Install a python bundle from json config
-
-	EC2 Actions on a specified Machine
-	----------------------------------
-	reboot              Reboot specified machine
-	start               Start specified machine
-	stop                Stop specified machine
-	terminate           Terminate specified mach
-
-	S3 Actions
-	----------
-	s3upload            Upload ServerStyle to s3 for new machines
-
-	IP Addresses
-	------------
-	addresses           List all IP Addresses allocated
-	associate           Attach an instance to one of your allocated addresses
-	disassociate        Release an address from an instance
-	`)
 }
 
 func main() {

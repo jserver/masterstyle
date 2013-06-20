@@ -78,15 +78,17 @@ func Tag() {
 
 func Status() {
 	instances = GetInstances()
-	header := []string{"InstId", "Name", "Zone", "Type", "Status", "DNS"}
+	header := []string{"Name", "InstId", "State", "Zone", "Type", "Arch", "RootDevice", "DNS"}
 	rows := make([]Row, len(instances))
 	for idx, instance := range instances {
 		rows[idx] = Row{
-			instance.InstanceId,
 			instance.Name,
+			instance.InstanceId,
+			instance.State.Name,
 			instance.AvailZone,
 			instance.InstanceType,
-			instance.State.Name,
+			instance.Arch,
+			instance.RootDevice,
 			instance.DNSName,
 		}
 	}
