@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"launchpad.net/goamz/ec2"
 	"log"
+	"strings"
 )
 
 func GetInstance(name string) *NamedInstance {
@@ -78,17 +79,19 @@ func Tag() {
 
 func Status() {
 	instances = GetInstances()
-	header := []string{"Name", "InstId", "State", "Zone", "Type", "Arch", "RootDevice", "DNS"}
+	header := []string{"Name", "InstId", "State", "Zone", "Type", "bit", "ebs", "DNS"}
 	rows := make([]Row, len(instances))
 	for idx, instance := range instances {
+		tf := map[bool]string{true: "Y", false: "N"}
+		bits := map[string]string{"i386": "32", "x86_64": "64"}
 		rows[idx] = Row{
 			instance.Name,
 			instance.InstanceId,
 			instance.State.Name,
 			instance.AvailZone,
-			instance.InstanceType,
-			instance.Arch,
-			instance.RootDevice,
+			strings.Split(instance.InstanceType, ".")[1],
+			bits[instance.Arch],
+			tf[instance.RootDevice == "ebs"],
 			instance.DNSName,
 		}
 	}
