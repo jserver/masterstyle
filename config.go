@@ -38,8 +38,8 @@ type PPA struct {
 }
 
 type Group struct {
-	Type string
-	Name string
+	Type  string
+	Value string
 }
 
 type Config struct {

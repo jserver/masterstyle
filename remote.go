@@ -36,7 +36,6 @@ func RemoteCall(address string, cmdArgs interface{}, results server.Results, com
 		fmt.Println(">>> [", errText, "]")
 	}
 
-	//fmt.Println(results.GetOutput())
 	errors := results.GetErrors()
 	if len(errors) > 0 {
 		fmt.Println("-----ERRORS-----")
@@ -73,6 +72,22 @@ func Upgrade(args []string) {
 	RemoteCall(address, cmdArgs, results, command)
 }
 
+func GetGroupPackages(name string) (bundles []string) {
+
+	groups := config.Groups[name]
+	for _, group := range groups {
+		if group.Type == "group" {
+			bundles = append(bundles, GetGroupPackages(group.Value)...)
+		} else if group.Type == "bundle" {
+			packages := config.Bundles[group.Value]
+			bundles = append(bundles, packages)
+		} else if group.Type == "package" {
+			bundles = append(bundles, group.Value)
+		}
+	}
+	return
+}
+
 func Install(args []string) {
 	address, err := GetAddress(args)
 	if err != nil {
@@ -102,13 +117,7 @@ func Install(args []string) {
 
 	case "group", "groups":
 		for _, name := range names {
-			groups := config.Groups[name]
-			for _, group := range groups {
-				if group.Type == "bundle" {
-					packages := config.Bundles[group.Name]
-					bundles = append(bundles, packages)
-				}
-			}
+			bundles = append(bundles, GetGroupPackages(name)...)
 		}
 
 	default:

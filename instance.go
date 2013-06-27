@@ -17,7 +17,7 @@ func GetInstance(name string) *NamedInstance {
 }
 
 func GetInstanceName(instId string) string {
-	var name string = "N/A"
+	var name string
 	for _, instance := range instances {
 		if instId == instance.InstanceId {
 			for _, tag := range instance.Tags {
