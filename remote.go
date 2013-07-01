@@ -88,6 +88,31 @@ func GetGroupPackages(name string) (bundles []string) {
 	return
 }
 
+func PPAInstall(args []string) {
+	address, err := GetAddress(args)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	if len(args) < 2 {
+		fmt.Println("Usage: ppa <box> <name>")
+		return
+	}
+	
+	ppa := config.PPAs[args[1]]
+
+	cmdArgs := &server.PPAInstallArgs{ppa.Name, ppa.Package}
+	results := new(server.PPAInstallResults)
+	command := "PPAInstall.AddRepo"
+
+	RemoteCall(address, cmdArgs, results, command)
+
+	fmt.Println(">>> Updating")
+	Update([]string{args[0]})
+	fmt.Println(">>> Installing")
+	Install([]string{args[0], "package", ppa.Package})
+}
+
 func Install(args []string) {
 	address, err := GetAddress(args)
 	if err != nil {

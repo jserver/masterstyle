@@ -154,3 +154,19 @@ func Terminate(args []string) {
 		fmt.Println("AWS ec2 Terminate Fail", err)
 	}
 }
+
+func CreateImage(args []string) {
+	if len(args) != 1 {
+		fmt.Println("No instance name given")
+	}
+	name := args[0]
+	instance := GetInstance(name)
+	instId := instance.InstanceId
+	amiName := AskQuestion("Enter Name: ")
+	amiDesc := AskQuestion("Enter Description: ")
+	image, err := conn.CreateImage(instId, amiName, amiDesc)
+	if err != nil {
+		fmt.Println("AWS ec2 create image Fail", err)
+	}
+	fmt.Println("Newly created image: ", image.ImageId)
+}

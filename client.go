@@ -149,6 +149,8 @@ func main() {
 			Upgrade(args)
 		case "install":
 			Install(args)
+		case "ppa":
+			PPAInstall(args)
 		case "script":
 			Script(args)
 		case "test":
@@ -166,6 +168,9 @@ func main() {
 			Associate()
 		case "disassociate":
 			Disassociate()
+
+		case "create_image":
+			CreateImage(args)
 
 		default:
 			fmt.Println("Command Not Found!")
