@@ -4,9 +4,10 @@ import "fmt"
 
 func help() {
 	fmt.Println(`The following commands are available
-	exit,q,quit         Leave Program
+	exit,q,quit            Leave Program
 	
 	ls, status             List all machines
+	security               List all security groups
 	launch <build>         Create a new ec2 instance from specified build
 	update <name>          apt-get update
 	upgrade <name>         apt-get upgrade
@@ -37,5 +38,3 @@ func help() {
 	disassociate        Release an address from an instance
 	`)
 }
-
-

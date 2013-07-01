@@ -128,6 +128,9 @@ func main() {
 		case "ls", "status":
 			Status()
 
+		case "security":
+			ListSecurityGroups()
+
 		case "tag":
 			Tag()
 
