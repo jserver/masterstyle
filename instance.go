@@ -101,7 +101,8 @@ func Status() {
 
 func Reboot(args []string) {
 	if len(args) != 1 {
-		fmt.Println("No instance name given")
+		fmt.Println("Usage: reboot <name>")
+		return
 	}
 	name := args[0]
 	instance := GetInstance(name)
@@ -115,7 +116,8 @@ func Reboot(args []string) {
 
 func Start(args []string) {
 	if len(args) != 1 {
-		fmt.Println("No instance name given")
+		fmt.Println("Usage: start <name>")
+		return
 	}
 	name := args[0]
 	instance := GetInstance(name)
@@ -129,7 +131,8 @@ func Start(args []string) {
 
 func Stop(args []string) {
 	if len(args) != 1 {
-		fmt.Println("No instance name given")
+		fmt.Println("Usage: stop <name>")
+		return
 	}
 	name := args[0]
 	instance := GetInstance(name)
@@ -143,7 +146,8 @@ func Stop(args []string) {
 
 func Terminate(args []string) {
 	if len(args) != 1 {
-		fmt.Println("No instance name given")
+		fmt.Println("Usage: terminate <name>")
+		return
 	}
 	name := args[0]
 	instance := GetInstance(name)
@@ -157,7 +161,8 @@ func Terminate(args []string) {
 
 func CreateImage(args []string) {
 	if len(args) != 1 {
-		fmt.Println("No instance name given")
+		fmt.Println("create_image <name>")
+		return
 	}
 	name := args[0]
 	instance := GetInstance(name)
