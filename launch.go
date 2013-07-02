@@ -48,7 +48,10 @@ func Launch(args []string) {
 
 	for idx, instance := range resp.Instances {
 		fmt.Println("Now running", instance.InstanceId)
-		name := fmt.Sprintf("%s-%d", answer, idx + 1)
+		name := answer
+		if cnt > 1 {
+			name = fmt.Sprintf("%s-%d", answer, idx + 1)
+		}
 		_, err = conn.CreateTags([]string{instance.InstanceId}, []ec2.Tag{{"Name", name}})
 		if err != nil {
 			fmt.Println("Error Creating Tags: ", err)
