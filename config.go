@@ -3,6 +3,7 @@ package main
 import "launchpad.net/goamz/ec2"
 
 type Build struct {
+	Count          int
 	Size           string
 	Image          string
 	Key            string

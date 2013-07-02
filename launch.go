@@ -13,14 +13,18 @@ func Launch(args []string) {
 	}
 	build := args[0]
 
-	line := AskQuestion("Enter Tag Name: ")
-	tags := []ec2.Tag{{"Name", line}}
+	answer := AskQuestion("Enter Tag Name: ")
 
 	options := ec2.RunInstances{
 		ImageId:        config.Images[config.Builds[build].Image],
 		InstanceType:   config.Builds[build].Size,
 		KeyName:        config.Builds[build].Key,
 		SecurityGroups: config.Builds[build].SecurityGroups,
+	}
+
+	cnt := config.Builds[build].Count
+	if cnt != 0 {
+		options.MinCount = config.Builds[build].Count
 	}
 
 	if config.Builds[build].Zone != "" {
@@ -42,14 +46,13 @@ func Launch(args []string) {
 		return
 	}
 
-	instIds := make([]string, len(resp.Instances))
 	for idx, instance := range resp.Instances {
 		fmt.Println("Now running", instance.InstanceId)
-		instIds[idx] = instance.InstanceId
-	}
-	_, err = conn.CreateTags(instIds, tags)
-	if err != nil {
-		fmt.Println("Error Creating Tags: ", err)
+		name := fmt.Sprintf("%s-%d", answer, idx + 1)
+		_, err = conn.CreateTags([]string{instance.InstanceId}, []ec2.Tag{{"Name", name}})
+		if err != nil {
+			fmt.Println("Error Creating Tags: ", err)
+		}
 	}
 
 	fmt.Println("Make sure you terminate instances to stop the cash flow.")
