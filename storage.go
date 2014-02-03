@@ -3,8 +3,9 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"launchpad.net/goamz/s3"
 	"os"
+
+	"launchpad.net/goamz/s3"
 )
 
 func S3Upload() {

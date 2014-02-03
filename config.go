@@ -53,7 +53,7 @@ type Config struct {
 	PythonBundles   map[string]string
 	Groups          map[string][]Group
 	AptRepositories map[string]Repository `json:"Apt:Repositories"`
-	PPAs            map[string]PPA 
+	PPAs            map[string]PPA
 	Builds          map[string]Build
 	Projects        map[string]Project
 	DebConfs        map[string][]string

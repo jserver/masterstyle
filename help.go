@@ -13,7 +13,7 @@ func help() {
 	upgrade <name>         apt-get upgrade
 	ppa <name> <ppa>       Add a new ppa repo and install package
 	script <name> <script> Run a script on the machine specified
-	test <dirs...>         Pass in a few directories to see if ServerStyle is responding
+	test <name> <dirs...>  Pass in a few directories to see if ServerStyle is responding
 
 	easy_install <name> <bundle>           Install a python bundle from json config
 

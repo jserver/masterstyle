@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"launchpad.net/goamz/aws"
-	"launchpad.net/goamz/ec2"
-	"launchpad.net/goamz/s3"
 	"log"
 	"os"
 	"strconv"
 	"strings"
+
+	"launchpad.net/goamz/aws"
+	"launchpad.net/goamz/ec2"
+	"launchpad.net/goamz/s3"
 )
 
 type NamedInstance struct {

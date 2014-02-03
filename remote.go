@@ -3,11 +3,12 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/jserver/serverstyle/server"
 	"io/ioutil"
 	"net/rpc"
 	"os"
 	"strings"
+
+	"github.com/jserver/serverstyle/server"
 )
 
 func GetAddress(args []string) (string, error) {
@@ -15,7 +16,10 @@ func GetAddress(args []string) (string, error) {
 		return "", errors.New("No instance name given")
 	}
 	name := args[0]
-	instance := GetInstance(name)
+	instance, err := GetInstance(name)
+	if err != nil {
+		return "", err
+	}
 	host := instance.DNSName
 
 	return fmt.Sprintf("%s:%d", host, 32168), nil
@@ -31,6 +35,12 @@ func RemoteCall(address string, cmdArgs interface{}, results server.Results, com
 
 	remoteCall := client.Go(command, cmdArgs, results, nil)
 	<-remoteCall.Done
+
+	if remoteCall.Error != nil {
+		fmt.Println(remoteCall.Error.Error())
+		return
+	}
+
 	errText := results.GetErr()
 	if len(errText) > 0 {
 		fmt.Println(">>> [", errText, "]")
@@ -98,7 +108,7 @@ func PPAInstall(args []string) {
 		fmt.Println("Usage: ppa <box> <name>")
 		return
 	}
-	
+
 	ppa := config.PPAs[args[1]]
 
 	cmdArgs := &server.PPAInstallArgs{ppa.Name, ppa.Package}
@@ -217,9 +227,16 @@ func Test(args []string) {
 		return
 	}
 
-	cmdArgs := &server.TestArgs{args[1:]}
+	cmdArgs := &server.TestArgs{server.Auth{"user", "pass123"}, args[1:]}
 	results := new(server.TestResults)
 	command := "Test.Runner"
 
 	RemoteCall(address, cmdArgs, results, command)
+
+	output := results.GetOutput()
+	if len(output) > 0 {
+		fmt.Println("-----STDOUT-----")
+		fmt.Println(output)
+		fmt.Println("----------------")
+	}
 }

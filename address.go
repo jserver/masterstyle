@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+
 	"launchpad.net/goamz/ec2"
 )
 

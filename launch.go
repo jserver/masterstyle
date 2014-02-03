@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+
 	"launchpad.net/goamz/ec2"
 )
 
@@ -50,7 +51,7 @@ func Launch(args []string) {
 		fmt.Println("Now running", instance.InstanceId)
 		name := answer
 		if cnt > 1 {
-			name = fmt.Sprintf("%s-%d", answer, idx + 1)
+			name = fmt.Sprintf("%s-%d", answer, idx+1)
 		}
 		_, err = conn.CreateTags([]string{instance.InstanceId}, []ec2.Tag{{"Name", name}})
 		if err != nil {

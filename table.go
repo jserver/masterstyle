@@ -35,13 +35,13 @@ func PrintTable(table *Table) {
 
 	dashLine := "+"
 	for _, size := range lens {
-		dashLine += fmt.Sprintf("%s+", strings.Repeat("-", size + 2))
+		dashLine += fmt.Sprintf("%s+", strings.Repeat("-", size+2))
 	}
 
 	fmt.Println(dashLine)
 	fmt.Print("|")
 	for idx, hdr := range table.Header {
-		str := hdr + strings.Repeat(" ", lens[idx] - len(hdr))
+		str := hdr + strings.Repeat(" ", lens[idx]-len(hdr))
 		fmt.Printf(" %s |", str)
 	}
 	fmt.Println()
@@ -50,7 +50,7 @@ func PrintTable(table *Table) {
 	for _, row := range table.Rows {
 		fmt.Print("|")
 		for idx, col := range row {
-			str := col + strings.Repeat(" ", lens[idx] - len(col))
+			str := col + strings.Repeat(" ", lens[idx]-len(col))
 			fmt.Printf(" %s |", str)
 		}
 		fmt.Println()
